@@ -5,7 +5,7 @@ use crate::shinobi::shinobi::{get_env, store_env};
 
 #[tokio::main]
 async fn main() {
-    let key = "DB_PASSWORD";
+    let key = "API_KEY";
 
     let secrets = vec![
         (
@@ -25,7 +25,7 @@ async fn main() {
 
     match get_env(key).await {
         Ok(secret) => {
-            if secret.get_value().unwrap() == "super_secret_123" {
+            if secret.get_value().unwrap() == "very_secret_key_456" {
                 println!("Secret: {:?}", secret.get_value().unwrap());
             } else {
                 println!("No secret found for key '{}'", key);
