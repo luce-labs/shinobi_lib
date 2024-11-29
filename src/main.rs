@@ -1,7 +1,7 @@
 pub mod shinobi;
 pub mod types;
 
-use crate::shinobi::shinobi::{get_env, store_env};
+use crate::shinobi::methods::{get_env, store_env};
 
 #[tokio::main]
 async fn main() {

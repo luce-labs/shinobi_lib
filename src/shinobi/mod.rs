@@ -1,3 +1,2 @@
-pub mod shinobi;
-
+pub mod methods;
 pub use crate::types::ProtectedSecret;
