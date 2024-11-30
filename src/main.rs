@@ -1,38 +1,31 @@
 pub mod shinobi;
 pub mod types;
 
-use crate::shinobi::methods::get_env;
+use crate::shinobi::methods::{get_env, store_env};
+use std::collections::HashMap;
+use std::error::Error;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // let key = "API_KEY";
+pub fn main() -> Result<(), Box<dyn Error>> {
+    // Prepare secrets to store
+    let mut secrets = HashMap::new();
+    secrets.insert("DB_USERNAME".to_string(), "my_database_user".to_string());
+    secrets.insert(
+        "DB_PASSWORD".to_string(),
+        "my_super_secret_password".to_string(),
+    );
+    secrets.insert("API_KEY".to_string(), "my_api_key_value".to_string());
 
-    // let secrets = vec![
-    //     (
-    //         "DB_PASSWORD".to_string(),
-    //         vec!["super_secret_123".to_string()],
-    //     ),
-    //     (
-    //         "API_KEY".to_string(),
-    //         vec!["very_secret_key_456".to_string()],
-    //     ),
-    // ];
+    // Store the secrets
+    store_env(secrets)?;
+    println!("Secrets stored successfully");
 
-    // match store_env(secrets).await {
-    //     Ok(_) => println!("Secrets stored successfully"),
-    //     Err(e) => eprintln!("Error: {}", e),
-    // }
+    // Retrieve specific secrets
+    let retrieved_secrets = get_env(&["DB_USERNAME", "API_KEY"])?;
 
-    let env_vars = get_env(&["DB_PASSWORD", "API_KEY"])?;
-
-    for (key, secret) in env_vars.iter() {
+    // Print retrieved secrets
+    for (key, secret) in retrieved_secrets.iter() {
         if let Some(value) = secret.get_value() {
             println!("{}: {}", key, value);
-            if value == "very_secret_key_456" {
-                println!("API_KEY found!");
-            }
-        } else {
-            println!("{}: No value found", key);
         }
     }
 
