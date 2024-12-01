@@ -28,11 +28,11 @@ pub fn get_env(keys: &[&str]) -> Result<HashMap<String, ProtectedSecret>, Box<dy
 
     let response_json = String::from_utf8(response_buffer)?;
 
-    let secrets_map: HashMap<String, String> = serde_json::from_str(&response_json)?;
+    let secrets_map: HashMap<String, ProtectedSecret> = serde_json::from_str(&response_json)?;
 
     let protected_secrets = secrets_map
         .into_iter()
-        .map(|(k, v)| (k, ProtectedSecret::new(Some(v))))
+        .map(|(k, v)| (k, ProtectedSecret::new(Some(v.get_value().unwrap()))))
         .collect();
 
     Ok(protected_secrets)

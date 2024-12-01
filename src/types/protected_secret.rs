@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::Deref;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ProtectedValue(String);
 
 impl Deref for ProtectedValue {
@@ -30,15 +31,15 @@ impl fmt::Debug for ProtectedValue {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ProtectedSecret {
     value: Option<ProtectedValue>,
 }
 
 impl ProtectedSecret {
-    pub fn new(value: Option<String>) -> Self {
+    pub fn new(value: Option<&ProtectedValue>) -> Self {
         ProtectedSecret {
-            value: value.map(ProtectedValue),
+            value: value.cloned(),
         }
     }
 
