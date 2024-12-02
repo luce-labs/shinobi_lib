@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::Deref;
+use std::str::Utf8Chunks;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ProtectedValue(String);
@@ -52,20 +53,20 @@ impl ProtectedSecret {
     }
 }
 
-impl fmt::Display for ProtectedSecret {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[PROTECTED]")
-    }
-}
+// impl fmt::Display for ProtectedSecret {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "[PROTECTED]")
+//     }
+// }
 
-impl fmt::Debug for ProtectedSecret {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[PROTECTED]")
-    }
-}
+// impl fmt::Debug for ProtectedSecret {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "[PROTECTED]")
+//     }
+// }
 
-impl PartialEq<str> for ProtectedSecret {
-    fn eq(&self, other: &str) -> bool {
-        self.value.as_ref().map(|v| &**v) == Some(other)
-    }
-}
+// impl PartialEq<str> for ProtectedSecret {
+//     fn eq(&self, other: &str) -> bool {
+//         self.value.as_ref().map(|v| &**v) == Some(other)
+//     }
+// }

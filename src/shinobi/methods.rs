@@ -1,4 +1,7 @@
+use crate::shinobi::key_exchange::DHKeyExchange;
 use crate::types::ProtectedSecret;
+use byteorder::{NetworkEndian, ReadBytesExt};
+use num_bigint::BigUint;
 use serde_json;
 use std::collections::HashMap;
 use std::error::Error;
@@ -6,11 +9,27 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 
 pub fn get_env(keys: &[&str]) -> Result<HashMap<String, ProtectedSecret>, Box<dyn Error>> {
-    use byteorder::{NetworkEndian, ReadBytesExt};
-    use std::io::{Read, Write};
-    use std::net::TcpStream;
-
     let mut stream = TcpStream::connect("127.0.0.1:6000")?;
+
+    let dh_exchange = DHKeyExchange::new();
+    let client_public_key = dh_exchange.get_public_key().to_bytes_be();
+
+    // Send client's public key
+    stream.write_all(&(client_public_key.len() as u32).to_be_bytes())?;
+    stream.write_all(&client_public_key)?;
+
+    // Receive server's public key
+    let mut server_key_length = [0u8; 4];
+    stream.read_exact(&mut server_key_length)?;
+    let server_key_length = u32::from_be_bytes(server_key_length) as usize;
+
+    let mut server_public_key_bytes = vec![0u8; server_key_length];
+    stream.read_exact(&mut server_public_key_bytes)?;
+
+    let server_public_key = BigUint::from_bytes_be(&server_public_key_bytes);
+
+    // Compute shared secret
+    let shared_secret = dh_exchange.compute_shared_secret(&server_public_key);
 
     let mut request = vec!["get_env".to_string()];
     request.extend(keys.iter().map(|&k| k.to_string()));
@@ -26,9 +45,12 @@ pub fn get_env(keys: &[&str]) -> Result<HashMap<String, ProtectedSecret>, Box<dy
     let mut response_buffer = vec![0; response_length];
     stream.read_exact(&mut response_buffer)?;
 
-    let response_json = String::from_utf8(response_buffer)?;
+    // Decrypt the response
+    let decrypted_response = DHKeyExchange::decrypt(&shared_secret, &response_buffer);
+    let response_json = String::from_utf8(decrypted_response)?;
 
-    let secrets_map: HashMap<String, ProtectedSecret> = serde_json::from_str(&response_json)?;
+    let secrets_map: HashMap<String, ProtectedSecret> =
+        serde_json::from_str(&response_json).unwrap();
 
     let protected_secrets = secrets_map
         .into_iter()
